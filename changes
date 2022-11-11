@@ -1,0 +1,15 @@
+Kevin, 10.11.22
+
+function updateOrderStatus(orderObj) mit meiner Version ausgetauscht, da es nicht funktioniert hat
+Setup Page:
+    Submit MQTT Subscriptions Button von Event listener auf onclick umgestellt (kannst du optisch gerne wieder anpassen)
+
+mqttTopic und mqttToder umbenannt, um sie leichter auseinander halten zu können
+
+
+Erweiterungen:
+neuen Button zum resetten der Subscriptions auf Setup-Page eingefügt
+        Funktion resetTopics() eingefügt
+latest update: <aktuelle Zeit>
+    html-Objekt auf orders- und resources Page eingefügt
+    Zeit wird in den update-Funktionen ganz am Ende aktualisiert
