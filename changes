@@ -13,3 +13,7 @@ neuen Button zum resetten der Subscriptions auf Setup-Page eingefügt
 latest update: <aktuelle Zeit>
     html-Objekt auf orders- und resources Page eingefügt
     Zeit wird in den update-Funktionen ganz am Ende aktualisiert
+
+Lucas, 17.11.22
+
+Login-Seite und Ladebildschirm hinzugefügt. Alle Änderungen unter https://github.com/lucasmoreira/App-Programmierung/commit/master
