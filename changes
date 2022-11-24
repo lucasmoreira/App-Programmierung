@@ -18,4 +18,14 @@ Lucas, 17.11.22
 
 Login-Seite und Ladebildschirm hinzugefügt. Alle Änderungen unter https://github.com/lucasmoreira/App-Programmierung/commit/master
 
-test
+Kevin, 24.11.22
+
+Setup Page überarbeitet:
+    es gibt jetzt ein weiteres Feld für die Server/Broker IP
+    Broker kann jetzt für orders und resources separat gesetzt werden (notwendig für nachfolgende Funktion)
+    Umsetzung im Code sehr unschön (einige Funktionen einfach dupliziert und abgeändert) - eventuell fixe ich das in der Zukunft - es funktioniert aber
+Neue Funktion auf orders Page: 
+    Resourcen können jetzt auf erledigt/finished gesetzt werden und stellen sich somit auf grün (Einfach z.B. 00:00:00:00:00:01 eingeben)
+    Dafür müssen das Topic iot/orders auf dem Broker 141.22.102.168 und das Topic iot/sql_result_2 auf dem Broker 141.22.102.163 abonniert werden
+    beachte: das Topic "iot/sql_result_2", welches hier modifiziert wird, wird nur alle 60 Sekunden abgerufen
+    
