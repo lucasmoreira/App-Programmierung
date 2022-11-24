@@ -28,13 +28,19 @@
                 
             window.onload = function() {
 
-                setTimeout(loading, 3000);
+                setTimeout(loading, 1000);
 
-                var mqttServer = document.getElementById("mqttServer"); 
-                var mqttServerStr = localStorage.getItem("mqttServer");
+                var mqttServer_orders = document.getElementById("mqttServer_orders"); 
+                var mqttServer_ordersStr = localStorage.getItem("mqttServer_orders");
                 
-                if (mqttServerStr != null) 
-                    mqttServer.value = mqttServerStr;
+                if (mqttServer_ordersStr != null) 
+                    mqttServer_orders.value = mqttServer_ordersStr;
+
+                var mqttServer_resources = document.getElementById("mqttServer_resources"); 
+                var mqttServer_resourcesStr = localStorage.getItem("mqttServer_resources");
+                
+                if (mqttServer_resourcesStr != null) 
+                    mqttServer_resources.value = mqttServer_resourcesStr;
 
                 var mqttTopic_resources = document.getElementById("mqttTopic_resources"); 
                 var mqttTopic_resourcesStr = localStorage.getItem("mqttTopic_resources");
@@ -72,45 +78,102 @@
 
 
             function buttonSubmitMQTT() {
-                var mqttServer = document.getElementById("mqttServer"); 
-                var mqttTopic_resources = document.getElementById("mqttTopic_resources");
+                var mqttServer_orders = document.getElementById("mqttServer_orders"); 
+                var mqttServer_resources = document.getElementById("mqttServer_resources"); 
+                
                 var mqttTopic_orders = document.getElementById("mqttTopic_orders");
+                var mqttTopic_resources = document.getElementById("mqttTopic_resources");
 
-                localStorage.setItem("mqttServer", mqttServer.value); 
-                localStorage.setItem("mqttTopic_resources", mqttTopic_resources.value); 
+                localStorage.setItem("mqttServer_orders", mqttServer_orders.value); 
+                localStorage.setItem("mqttServer_resources", mqttServer_resources.value);                
+ 
                 localStorage.setItem("mqttTopic_orders", mqttTopic_orders.value); 
+                localStorage.setItem("mqttTopic_resources", mqttTopic_resources.value);
 
+                // do the full process twice for both brokers entered
 
-                // Create a client instance
-                client = new Paho.MQTT.Client(mqttServer.value, 1884, "Cordova_MQTT_Client_G1");
+                // Create a client instance for resources
+                client_orders = new Paho.MQTT.Client(mqttServer_orders.value, 1884, "Cordova_MQTT_Client_G1_orders");
                 // set callback handlers 
-                client.onConnectionLost = onConnectionLost; 
-                client.onMessageArrived = onMessageArrived;
+                client_orders.onConnectionLost = onConnectionLost; 
+                client_orders.onMessageArrived = onMessageArrived;
                 // connect the client 
-                client.connect({ onSuccess: onConnect });
+                client_orders.connect({ onSuccess: onConnect_orders });
+
+                // Create a client instance for orders
+                client_resources = new Paho.MQTT.Client(mqttServer_resources.value, 1884, "Cordova_MQTT_Client_G1_resources");
+                // set callback handlers 
+                client_resources.onConnectionLost = onConnectionLost; 
+                client_resources.onMessageArrived = onMessageArrived;
+                // connect the client 
+                client_resources.connect({ onSuccess: onConnect_resources });
                 }
 
-            function onConnect() {
+            function onConnect_orders() {
                 // Once a connection has been made, make a subscription and send a message. 
-                console.log("onConnect");
+                console.log("onConnect_orders");
                 // find topic
-                // console.log(mqttTopic_resources.value);
 
+                if (mqttTopic_orders.value != "") {
+                    console.log(mqttTopic_orders.value);
+                    client_orders.subscribe(mqttTopic_orders.value, {qos: 2});
+                }
+                //message = new Paho.MQTT.Message("Hello"); 
+                //message.destinationName = "World"; 
+
+                //client_orders.send(message);
+                }
+
+                function onConnect_resources() {
+                // Once a connection has been made, make a subscription and send a message. 
+                console.log("onConnect_resources");
+                // find topic
 
                 if (mqttTopic_resources.value != "") {
                     console.log(mqttTopic_resources.value);
+                    client_resources.subscribe(mqttTopic_resources.value, {qos: 2});
+                }               
+                //message = new Paho.MQTT.Message("Hello"); 
+                //message.destinationName = "World"; 
 
-                    client.subscribe(mqttTopic_resources.value, {qos: 2});
+                //client_resources.send(message);
                 }
-                if (mqttTopic_orders.value != "") {
-                    console.log(mqttTopic_orders.value);
-                    client.subscribe(mqttTopic_orders.value, {qos: 2});
+
+                function buttonFinishResource(){
+                    console.log("pubMessage() accessed");
+                    
+                    // set host IP to submit message to
+                    var host= "141.22.102.163";
+                    // Create a client instance to publish
+                    pub_client = new Paho.MQTT.Client(host, 1884, "Cordova_MQTT_Pub_Client_G1");
+                    // set callback handlers 
+                    pub_client.onConnectionLost = onConnectionLost; 
+                    // connect the client 
+                    pub_client.connect({ onSuccess: onConnect_pub });
+
                 }
-                message = new Paho.MQTT.Message("Hello"); 
-                message.destinationName = "World"; 
 
-                client.send(message);
-
+                function onConnect_pub(){
+                    console.log("onConnect_pub() accessed"); 
+                    
+                    // create message
+                    var resource = document.getElementById("finishResource");
+                    //console.log(resource.value);
+                    
+                    //simple check for length of resource_input
+                    if(resource.value.length==17){
+                        // concatenate String to include User input and put the final message into pub_message
+                        var pub_message_str = "{\"ID\": 12345678,\"S_ID\": \"Client\",\"T\": \"Data\",\"S\": \"Resource\",\"M\": \"" + resource.value + "\",\"C\": 0,\"B\": 0,\"V\": [0],\"R\": 0}"           
+                        console.log("Correct Resource. Message to be submitted: " + pub_message_str);
+                        pub_message = new Paho.MQTT.Message(pub_message_str);
+                        // set topic
+                        pub_message.destinationName = "iot/wlan";
+                        // send message
+                        pub_client.send(pub_message);
+                    }else{
+                        console.log("Error: incorrect Resource");
+                    }
+                    
                 }
 
             // called when the client loses its connection
@@ -256,8 +319,8 @@
 
             //unsubscribes from current input Topics and resets Topic-textboxes and -localstorage
             function resetTopics(){
-                client.unsubscribe(mqttTopic_resources.value, console.log("Success"), console.log("Error"));
-                client.unsubscribe(mqttTopic_orders.value, console.log("Success"), console.log("Error"));
+                client_resources.unsubscribe(mqttTopic_resources.value, console.log("Success"), console.log("Error"));
+                client_orders.unsubscribe(mqttTopic_orders.value, console.log("Success"), console.log("Error"));
 
                 document.getElementById('mqttTopic_resources').value = "iot/";
                 document.getElementById('mqttTopic_orders').value = "iot/";
@@ -265,6 +328,7 @@
                 localStorage.removeItem("mqttTopic_resources");
                 localStorage.removeItem("mqttTopic_orders");
             }
+
 
             
         </script>
@@ -384,6 +448,14 @@
                     <table id="orders_table" class="table table-striped table-bordered table-hover"> </table>
                     </center>
                 </div>
+                <div class="form-group">
+                    <label for="usr">Check as finished:</label>
+                    <input type="text" class="form-control" id="finishResource" placeholder="<Please enter resource to mark as finished. Format: 00:00:00:00:00:XX" >
+                </div>
+                <div class="btn-group-vertical" style="width:100%">               
+                    <button id="btnMQTT" type="button" class="btn btn-primary" onClick="buttonFinishResource()">Check resource as finished</button>
+                </div>
+
         </div>
 
         <div id="bodyResources">
@@ -419,15 +491,17 @@
             </div>
     
             <div class="form-group">
-                <label for="usr">MQTT Server:</label>
-                <input type="text" class="form-control" id="mqttServer" placeholder="<please enter mqtt broker IP address or hostname> value=141.22.102.168" >
+                <label for="usr">MQTT Server Orders:</label>
+                <input type="text" class="form-control" id="mqttServer_orders" placeholder="<please enter mqtt broker IP address or hostname> value=141.22.102.168" >
+
+                <label for="usr">MQTT Topic Orders:</label>
+                <input type="text" class="form-control" id="mqttTopic_orders" placeholder="<please enter mqtt Topic Order>" >
+
+                <label for="usr">MQTT Server Resources:</label>
+                <input type="text" class="form-control" id="mqttServer_resources" placeholder="<please enter mqtt broker IP address or hostname> value=141.22.102.163" >
     
                 <label for="usr">MQTT Topic Resources:</label>
                 <input type="text" class="form-control" id="mqttTopic_resources" placeholder="<please enter mqtt Topic Resource>" >
-            
-                <label for="usr">MQTT Topic Orders:</label>
-                <input type="text" class="form-control" id="mqttTopic_orders" placeholder="<please enter mqtt Topic Order>" >
-            
             </div>
     
             <div class="btn-group-vertical" style="width:100%">               
