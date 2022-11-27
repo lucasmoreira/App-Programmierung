@@ -139,6 +139,58 @@
                 //client_resources.send(message);
                 }
 
+                function buttonLogin(){
+
+                    // set host IP to submit message to
+                    var host= "141.22.102.163";
+
+                    Login_client = new Paho.MQTT.Client(host, 1884, "Cordova_MQTT_login_Client_G1");
+
+                    Login_client.onConnectionLost = onConnectionLost;
+                    Login_client.onMessageArrived = validatelogin;
+
+                    Login_client.connect({ onSuccess:  onConnect_pub_login});
+                }
+
+                function validatelogin(message){
+
+                    last_MQTT_Message = message.payloadString; 
+                    Login_client.unsubscribe('iot/sql_store_result_1');
+                    jsonData = JSON.parse(message.payloadString);
+                    
+                    var loginUser = document.getElementById("loginUser").value;
+                    var loginPassword = document.getElementById("loginPassword").value;
+
+                    jsonData = JSON.parse(jsonData.result[0]["jdoc->'$.info'"]);
+
+                    if (jsonData[loginUser] == undefined) {
+                        window.alert("Username not found");
+                    }
+                    else{
+                        if (jsonData[loginUser].password == loginPassword)
+                            GoBack(); 
+                        else
+                            window.alert("Password wrong");
+                    }
+
+                }
+
+                function onConnect_pub_login(){
+
+                    // set host IP to submit message to
+                    var host= "141.22.102.163";
+
+                    Login_client.subscribe('iot/sql_store_result_1')                    
+                    
+                    // concatenate String to include User input and put the final message into pub_message
+                    var pub_message_str = '{"client": "g1-temp", "query" : "SELECT jdoc->\'$.info\' FROM keyval WHERE jdoc->\'$.client\' = \'g1-users-1\' ", "topic" : "iot/sql_store_result_1"}'  
+                    pub_message = new Paho.MQTT.Message(pub_message_str);
+                    // set topic
+                    pub_message.destinationName = "iot/sql_store";
+                    // send message
+                    Login_client.send(pub_message);
+                }
+                    
                 function buttonFinishResource(){
                     console.log("pubMessage() accessed");
                     
@@ -345,7 +397,7 @@
                 display: none;}
        </style>
     </head>
-    <body>
+    <body >
 
         <div id="deviceready" class="loading" >
             <div class="loading-text">
@@ -359,9 +411,9 @@
             </div>
         </div>
 
-        <div id="bodyMain"> 
+        <div id="bodyMain" > 
 
-            <div class="app" style="text-align: center;">
+            <div class="app" style="text-align:center; vertical-align:middle">
                 <h1>Order Manager Main</h1>
             </div>
     
@@ -381,7 +433,7 @@
 
             <br><br><br><br>
 
-            <div class="grid">
+            <div class="grid" >
 
                 <form action="https://httpbin.org/post" method="POST" class="form login">
 
@@ -389,14 +441,14 @@
                     <label for="login__username"><svg class="icon">
                         <use xlink:href="#icon-user"></use>
                     </svg><span class="hidden">Username</span></label>
-                    <input autocomplete="username" id="login__username" type="text" name="username" class="form__input" placeholder="Username" required>
+                    <input autocomplete="username" id="loginUser" type="text" name="username" class="form__input" placeholder="Username" required>
                 </div>
 
                 <div class="form__field">
                     <label for="login__password"><svg class="icon">
                         <use xlink:href="#icon-lock"></use>
                     </svg><span class="hidden">Password</span></label>
-                    <input id="login__password" type="password" name="password" class="form__input" placeholder="Password" required>
+                    <input id="loginPassword" type="password" name="password" class="form__input" placeholder="Password" required>
                 </div>
 
                 <!-- <div class="form__field">
@@ -407,12 +459,17 @@
 
                 <div class="btn-group-vertical" style="width:100%;">
                     <button id="btnBack" type="button" class="btn btn-primary"
-                    onClick="GoBack()">Login</button>       
+                    onClick="buttonLogin()">Login</button>       
                 </div>
 
-                <p class="text--center">Not a member? <a href="#">Sign up now</a> <svg class="icon">
+                <div class="btn-group-vertical" style="width:100%;">
+                    <button id="btnBack" type="button" class="btn btn-primary"
+                    onClick="GoBack()">Bypass login</button>       
+                </div>
+
+                <!-- <p class="text--center">Not a member? <a href="#">Sign up now</a> <svg class="icon">
                     <use xlink:href="#icon-arrow-right"></use>
-                </svg></p>
+                </svg></p> -->
 
             </div>
 

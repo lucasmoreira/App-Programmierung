@@ -29,3 +29,6 @@ Neue Funktion auf orders Page:
     Dafür müssen das Topic iot/orders auf dem Broker 141.22.102.168 und das Topic iot/sql_result_2 auf dem Broker 141.22.102.163 abonniert werden
     beachte: das Topic "iot/sql_result_2", welches hier modifiziert wird, wird nur alle 60 Sekunden abgerufen
     
+lucas 27.11.22
+
+Login-Authentifizierung hinzugefügt. Verwendete Funktionen: buttonLogin, validatelogin, onConnect_pub_login 
