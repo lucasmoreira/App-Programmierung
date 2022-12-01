@@ -4,6 +4,14 @@
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 /*! normalize.css v3.0.3 | MIT License | github.com/necolas/normalize.css */
+
+
+.parent-div{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 html {
   font-family: sans-serif;
   -webkit-text-size-adjust: 100%;
@@ -3115,8 +3123,8 @@ fieldset[disabled] .btn-default.focus {
 }
 .btn-primary {
   color: #fff;
-  background-color: #337ab7;
-  border-color: #2e6da4;
+  background-color: #003ca0;
+  border-color: #003ca0;
 }
 .btn-primary:focus,
 .btn-primary.focus {

@@ -8,7 +8,7 @@
         <meta name="viewport" content="initial-scale=1, width=device-width, viewport-fit=cover">
         <meta name="color-scheme" content="light dark">
         <title><center>Order Manager</center></title>
-        <link rel="stylesheet" href="css/bootstrap.min.css">
+        <link rel="stylesheet" href="css/bootstrap.css">
         <link rel="stylesheet" href="css/loading.css">
         <link rel="stylesheet" href="css/login.css">
         <!-- <link href="css/loading.css"> 
@@ -28,13 +28,19 @@
                 
             window.onload = function() {
 
-                setTimeout(loading, 3000);
+                setTimeout(loading, 1000);
 
-                var mqttServer = document.getElementById("mqttServer"); 
-                var mqttServerStr = localStorage.getItem("mqttServer");
+                var mqttServer_orders = document.getElementById("mqttServer_orders"); 
+                var mqttServer_ordersStr = localStorage.getItem("mqttServer_orders");
                 
-                if (mqttServerStr != null) 
-                    mqttServer.value = mqttServerStr;
+                if (mqttServer_ordersStr != null) 
+                    mqttServer_orders.value = mqttServer_ordersStr;
+
+                var mqttServer_resources = document.getElementById("mqttServer_resources"); 
+                var mqttServer_resourcesStr = localStorage.getItem("mqttServer_resources");
+                
+                if (mqttServer_resourcesStr != null) 
+                    mqttServer_resources.value = mqttServer_resourcesStr;
 
                 var mqttTopic_resources = document.getElementById("mqttTopic_resources"); 
                 var mqttTopic_resourcesStr = localStorage.getItem("mqttTopic_resources");
@@ -72,45 +78,171 @@
 
 
             function buttonSubmitMQTT() {
-                var mqttServer = document.getElementById("mqttServer"); 
-                var mqttTopic_resources = document.getElementById("mqttTopic_resources");
+                var mqttServer_orders = document.getElementById("mqttServer_orders"); 
+                var mqttServer_resources = document.getElementById("mqttServer_resources"); 
+                
                 var mqttTopic_orders = document.getElementById("mqttTopic_orders");
+                var mqttTopic_resources = document.getElementById("mqttTopic_resources");
 
-                localStorage.setItem("mqttServer", mqttServer.value); 
-                localStorage.setItem("mqttTopic_resources", mqttTopic_resources.value); 
+                localStorage.setItem("mqttServer_orders", mqttServer_orders.value); 
+                localStorage.setItem("mqttServer_resources", mqttServer_resources.value);                
+ 
                 localStorage.setItem("mqttTopic_orders", mqttTopic_orders.value); 
+                localStorage.setItem("mqttTopic_resources", mqttTopic_resources.value);
 
-
-                // Create a client instance
-                client = new Paho.MQTT.Client(mqttServer.value, 1884, "Cordova_MQTT_Client_G1");
+                if  (mqttServer_resources.value == "" && mqttTopic_resources.value == "" && mqttServer_orders.value == "" && mqttTopic_orders.value == "")
+                        window.alert("Give at least one complete input (server and topic)")
+                if (mqttServer_resources.value != "" && mqttTopic_resources.value == "")
+                        window.alert("Give Topic for Resources")
+                if (mqttServer_resources.value == "" && mqttTopic_resources.value != "")
+                        window.alert("Give Server for Resources")
+                if (mqttServer_orders.value != "" && mqttTopic_orders.value == "")
+                        window.alert("Give Topic for Orders")
+                if (mqttServer_orders.value == "" && mqttTopic_orders.value != "")
+                        window.alert("Give Server for Orders")
+                           
+                if (mqttServer_orders.value != "" && mqttTopic_orders.value != ""){
+                // Create a client instance for resources
+                client_orders = new Paho.MQTT.Client(mqttServer_orders.value, 1884, "Cordova_MQTT_Client_G1_orders");
                 // set callback handlers 
-                client.onConnectionLost = onConnectionLost; 
-                client.onMessageArrived = onMessageArrived;
+                client_orders.onConnectionLost = onConnectionLost; 
+                client_orders.onMessageArrived = onMessageArrived;
                 // connect the client 
-                client.connect({ onSuccess: onConnect });
+                client_orders.connect({ onSuccess: onConnect_orders}, 
+                            {onFailure: window.alert("Error connecting to the Orders Server.")});
+                }
+                if (mqttServer_resources.value != "" && mqttTopic_resources.value != ""){
+                    // Create a client instance for orders
+                    client_resources = new Paho.MQTT.Client(mqttServer_resources.value, 1884, "Cordova_MQTT_Client_G1_resources");
+                    // set callback handlers 
+                    client_resources.onConnectionLost = onConnectionLost; 
+                    client_resources.onMessageArrived = onMessageArrived;
+                    // connect the client 
+                    client_resources.connect({ onSuccess: onConnect_resources},
+                    {onFailure: window.alert("Error connecting to the Resources Server.")}); //  
+                }}
+               
+                
+
+                
+
+
+            function onConnect_orders() {
+                // Once a connection has been made, make a subscription and send a message. 
+                //console.log("onConnect_orders");
+                // find topic
+
+                if (mqttTopic_orders.value != "") {
+                    //console.log(mqttTopic_orders.value);
+                    client_orders.subscribe(mqttTopic_orders.value, {qos: 2});
                 }
 
-            function onConnect() {
-                // Once a connection has been made, make a subscription and send a message. 
-                console.log("onConnect");
-                // find topic
-                // console.log(mqttTopic_resources.value);
+                //message = new Paho.MQTT.Message("Hello"); 
+                //message.destinationName = "World"; 
 
+                //client_orders.send(message);
+                }
+
+                function onConnect_resources() {
+                // Once a connection has been made, make a subscription and send a message. 
+                //console.log("onConnect_resources");
+                // find topic
 
                 if (mqttTopic_resources.value != "") {
-                    console.log(mqttTopic_resources.value);
-
-                    client.subscribe(mqttTopic_resources.value, {qos: 2});
+                    //console.log(mqttTopic_resources.value);
+                    client_resources.subscribe(mqttTopic_resources.value, {qos: 2});
+                } 
+                window.alert("Connection Sucessfully established")
+                
                 }
-                if (mqttTopic_orders.value != "") {
-                    console.log(mqttTopic_orders.value);
-                    client.subscribe(mqttTopic_orders.value, {qos: 2});
+
+                function buttonLogin(){
+
+                    // set host IP to submit message to
+                    var host= "141.22.102.163";
+
+                    Login_client = new Paho.MQTT.Client(host, 1884, "Cordova_MQTT_login_Client_G1");
+
+                    Login_client.onConnectionLost = onConnectionLost;
+                    Login_client.onMessageArrived = validatelogin;
+
+                    Login_client.connect({ onSuccess:  onConnect_pub_login});
                 }
-                message = new Paho.MQTT.Message("Hello"); 
-                message.destinationName = "World"; 
 
-                client.send(message);
+                function validatelogin(message){
 
+                    last_MQTT_Message = message.payloadString; 
+                    Login_client.unsubscribe('iot/sql_store_result_1');
+                    jsonData = JSON.parse(message.payloadString);
+                    
+                    var loginUser = document.getElementById("loginUser").value;
+                    var loginPassword = document.getElementById("loginPassword").value;
+
+                    jsonData = JSON.parse(jsonData.result[0]["jdoc->'$.info'"]);
+
+                    if (jsonData[loginUser] == undefined) {
+                        window.alert("Username not found");
+                    }
+                    else{
+                        if (jsonData[loginUser].password == loginPassword)
+                            GoBack(); 
+                        else
+                            window.alert("Password wrong");
+                    }
+
+                }
+
+                function onConnect_pub_login(){
+
+                    // set host IP to submit message to
+                    var host= "141.22.102.163";
+
+                    Login_client.subscribe('iot/sql_store_result_1')                    
+                    
+                    // concatenate String to include User input and put the final message into pub_message
+                    var pub_message_str = '{"client": "g1-temp", "query" : "SELECT jdoc->\'$.info\' FROM keyval WHERE jdoc->\'$.client\' = \'g1-users-1\' ", "topic" : "iot/sql_store_result_1"}'  
+                    pub_message = new Paho.MQTT.Message(pub_message_str);
+                    // set topic
+                    pub_message.destinationName = "iot/sql_store";
+                    // send message
+                    Login_client.send(pub_message);
+                }
+                    
+                function buttonFinishResource(){
+                    console.log("pubMessage() accessed");
+                    
+                    // set host IP to submit message to
+                    var host= "141.22.102.163";
+                    // Create a client instance to publish
+                    pub_client = new Paho.MQTT.Client(host, 1884, "Cordova_MQTT_Pub_Client_G1");
+                    // set callback handlers 
+                    pub_client.onConnectionLost = onConnectionLost; 
+                    // connect the client 
+                    pub_client.connect({ onSuccess: onConnect_pub });
+
+                }
+
+                function onConnect_pub(){
+                    console.log("onConnect_pub() accessed"); 
+                    
+                    // create message
+                    var resource = document.getElementById("finishResource");
+                    //console.log(resource.value);
+                    
+                    //simple check for length of resource_input
+                    if(resource.value.length==17){
+                        // concatenate String to include User input and put the final message into pub_message
+                        var pub_message_str = "{\"ID\": 12345678,\"S_ID\": \"Client\",\"T\": \"Data\",\"S\": \"Resource\",\"M\": \"" + resource.value + "\",\"C\": 0,\"B\": 0,\"V\": [0],\"R\": 0}"           
+                        console.log("Correct Resource. Message to be submitted: " + pub_message_str);
+                        pub_message = new Paho.MQTT.Message(pub_message_str);
+                        // set topic
+                        pub_message.destinationName = "iot/wlan";
+                        // send message
+                        pub_client.send(pub_message);
+                    }else{
+                        console.log("Error: incorrect Resource");
+                    }
+                    
                 }
 
             // called when the client loses its connection
@@ -122,22 +254,23 @@
 
             // called when a message arrives
             function onMessageArrived(message) { 
-                messageCounter++;
+
+                //messageCounter++;
                 last_MQTT_Message = message.payloadString; 
-                console.log("onMessageArrived:"); 
-                console.log("QoS: " + message.qos); 
-                console.log(message.payloadString);
-                var mqttMsgCounter = document.getElementById("mqtt_message_counter"); 
-                mqttMsgCounter.innerHTML = String(messageCounter);
-                var mqttMsg = document.getElementById("mqtt_message");
+                //console.log("onMessageArrived:"); 
+                //console.log("QoS: " + message.qos); 
+                //console.log(message.payloadString);
+                //var mqttMsgCounter = document.getElementById("mqtt_message_counter"); 
+                //mqttMsgCounter.innerHTML = String(messageCounter);
+                //var mqttMsg = document.getElementById("mqtt_message");
                 var jsonData;
                 try {
                 jsonData = JSON.parse(message.payloadString);
                     } catch (e) {
                             return;
                 }
-                mqttMsg.innerHTML = JSON.stringify(jsonData);
-                console.log(jsonData);
+                //mqttMsg.innerHTML = JSON.stringify(jsonData);
+                //console.log(jsonData);
                 if (jsonData.orders == undefined) 
                     updateResourceStatus(jsonData);
                 else
@@ -147,6 +280,11 @@
 
             function openPageOrders() {
                  document.getElementById('bodyOrders').style.display = 'block'; 
+                 document.getElementById('bodyMain').style.display = 'none';
+            }
+
+            function openPageScan() {
+                 document.getElementById('bodyScan').style.display = 'block'; 
                  document.getElementById('bodyMain').style.display = 'none';
             }
 
@@ -162,11 +300,24 @@
             function GoBack() {
                 
                  document.getElementById('bodyLogin').style.display = 'none';
+                 document.getElementById('bodyScan').style.display = 'none';
                  document.getElementById('bodyOrders').style.display = 'none';
                  document.getElementById('bodyResources').style.display = 'none';
                  document.getElementById('bodySetup').style.display = 'none'; 
                  document.getElementById('bodyMain').style.display = 'block';
             }
+
+            function openPageLogout() {
+                document.getElementById('bodyLogin').style.display = 'none';
+                document.getElementById('bodyScan').style.display = 'none';
+                document.getElementById('bodyOrders').style.display = 'none';
+                document.getElementById('bodyResources').style.display = 'none';
+                document.getElementById('bodySetup').style.display = 'none'; 
+                document.getElementById('bodyMain').style.display = 'none';
+                document.getElementById('bodyLogin').style.display = 'block';
+           }
+
+            
 
             
             function updateResourceStatus(jsonData) {
@@ -179,11 +330,11 @@
                 var length = Math.min(jsonData.length, 10);
                 
                 for (var i = 0; i < length; i++) { 
-                    console.log(trs.rows[i]);
+                    //console.log(trs.rows[i]);
                     
                     var row = trs.rows[i];
-                    console.log(jsonData[i]);
-                    console.log(jsonData[i].mac);
+                    //console.log(jsonData[i]);
+                    //console.log(jsonData[i].mac);
                     var cell_ssid = row.cells[0];
                     var cell_time = row.cells[1];
                     // Add some text to the new cells: 
@@ -256,8 +407,8 @@
 
             //unsubscribes from current input Topics and resets Topic-textboxes and -localstorage
             function resetTopics(){
-                client.unsubscribe(mqttTopic_resources.value, console.log("Success"), console.log("Error"));
-                client.unsubscribe(mqttTopic_orders.value, console.log("Success"), console.log("Error"));
+                client_resources.unsubscribe(mqttTopic_resources.value, console.log("Success"), console.log("Error"));
+                client_orders.unsubscribe(mqttTopic_orders.value, console.log("Success"), console.log("Error"));
 
                 document.getElementById('mqttTopic_resources').value = "iot/";
                 document.getElementById('mqttTopic_orders').value = "iot/";
@@ -265,6 +416,7 @@
                 localStorage.removeItem("mqttTopic_resources");
                 localStorage.removeItem("mqttTopic_orders");
             }
+
 
             
         </script>
@@ -279,9 +431,11 @@
                 display: none;}
             #bodyMain {
                 display: none;}
+            #bodyScan {
+                display: none;}
        </style>
     </head>
-    <body>
+    <body >
 
         <div id="deviceready" class="loading" >
             <div class="loading-text">
@@ -295,44 +449,65 @@
             </div>
         </div>
 
-        <div id="bodyMain"> 
+        <div id="bodyMain" class="grid"> 
 
-            <div class="app" style="text-align: center;">
+            <div class="app" style="text-align: center; color: #a0bedc;">
                 <h1>Order Manager Main</h1>
             </div>
     
-            <div class="btn-group-vertical" style="width:100%;">
+            <div class="btn-group-vertical" style="width:100%">
                 <button id="btnOrders" type="button" class="btn btn-primary"
                 onClick="openPageOrders()">Orders</button>
                 <button id="btnResources" type="button" class="btn btn-primary"
                 onClick="openPageResources()">Resources</button>
                 <button id="btnSetup" type="button" class="btn btn-primary"
                 onClick="openPageSetup()">Setup</button>
+                <button id="btnScan" type="button" class="btn btn-primary"
+                onClick="openPageScan()">Scanner</button>
+                <br><br>
+                <button id="btnLogout" type="button" class="btn btn-primary"
+                onClick="openPageLogout()">Logout</button>
             </div>
 
 
         </div>
 
-        <div id="bodyLogin">
+        <div id="bodyScan" class="grid"> 
+
+            <div class="app" style="text-align: center; color: #a0bedc;">
+                <h1>Scanner</h1>
+            </div>
+    
+            <div class="btn-group-vertical" style="width:100%;">
+                <button id="btnSetup" type="button" class="btn btn-primary"
+                onClick="GoBack()">Go Back</button>
+            </div>
+
+        </div>
+
+        <div id="bodyLogin" >
 
             <br><br><br><br>
 
-            <div class="grid">
 
+            <div class="grid" >
+
+                <img style="width:100%;" src="https://play-lh.googleusercontent.com/i8GXYP6dRj60rIRXTUMWJCQIXFL7OgAV0MFSH3CtACV86p-aH67oIXOVnrs_gT4pOec=w600-h300-pc0xffffff-pd" >
+                <br><br><br>
                 <form action="https://httpbin.org/post" method="POST" class="form login">
 
                 <div class="form__field">
                     <label for="login__username"><svg class="icon">
                         <use xlink:href="#icon-user"></use>
                     </svg><span class="hidden">Username</span></label>
-                    <input autocomplete="username" id="login__username" type="text" name="username" class="form__input" placeholder="Username" required>
+                    <input autocomplete="username" id="loginUser" type="text" name="username" class="form__input" placeholder="Username" required>
                 </div>
 
                 <div class="form__field">
                     <label for="login__password"><svg class="icon">
                         <use xlink:href="#icon-lock"></use>
                     </svg><span class="hidden">Password</span></label>
-                    <input id="login__password" type="password" name="password" class="form__input" placeholder="Password" required>
+                    <input id="loginPassword" type="password" name="password" class="form__input" placeholder="Password" required>
                 </div>
 
                 <!-- <div class="form__field">
@@ -340,15 +515,21 @@
                 </div> -->
 
                 </form>
+              
 
                 <div class="btn-group-vertical" style="width:100%;">
                     <button id="btnBack" type="button" class="btn btn-primary"
-                    onClick="GoBack()">Login</button>       
+                    onClick="buttonLogin()">Login</button>       
                 </div>
 
-                <p class="text--center">Not a member? <a href="#">Sign up now</a> <svg class="icon">
+                <div class="btn-group-vertical" style="width:100%;">
+                    <button id="btnBack" type="button" class="btn btn-primary"
+                    onClick="GoBack()">Bypass login</button>       
+                </div>
+
+                <!-- <p class="text--center">Not a member? <a href="#">Sign up now</a> <svg class="icon">
                     <use xlink:href="#icon-arrow-right"></use>
-                </svg></p>
+                </svg></p> -->
 
             </div>
 
@@ -365,8 +546,8 @@
             </svg>
         </div>
 
-        <div id="bodyOrders"> 
-                <div class="app" style="text-align: center;">
+        <div id="bodyOrders" class="grid"> 
+                <div class="app" style="text-align: center; color: #a0bedc;">
                     <h1>Orders</h1>
                 </div>
                 
@@ -384,10 +565,18 @@
                     <table id="orders_table" class="table table-striped table-bordered table-hover"> </table>
                     </center>
                 </div>
+                <div class="form-group">
+                    <label for="usr">Check as finished:</label>
+                    <input type="text" class="form-control" id="finishResource" placeholder="<Please enter resource to mark as finished. Format: 00:00:00:00:00:XX" >
+                </div>
+                <div class="btn-group-vertical" style="width:100%">               
+                    <button id="btnMQTT" type="button" class="btn btn-primary" onClick="buttonFinishResource()">Check resource as finished</button>
+                </div>
+
         </div>
 
-        <div id="bodyResources">
-            <div class="app" style="text-align: center;">
+        <div id="bodyResources" class="grid">
+            <div class="app" style="text-align: center; color: #a0bedc;">
                 <h1>Resources</h1>
             </div>
             <div class="btn-group-vertical" style="width:100%;">
@@ -407,9 +596,9 @@
                 
         </div>
 
-        <div id="bodySetup">
+        <div id="bodySetup" class="grid">
     
-            <div class="app" style="text-align: center;">
+            <div class="app" style="text-align: center; color: #a0bedc;"> 
                 <h1>Setup</h1>
             </div>
     
@@ -419,15 +608,17 @@
             </div>
     
             <div class="form-group">
-                <label for="usr">MQTT Server:</label>
-                <input type="text" class="form-control" id="mqttServer" placeholder="<please enter mqtt broker IP address or hostname> value=141.22.102.168" >
+                <label for="usr">MQTT Server Orders:</label>
+                <input type="text" class="form-control" id="mqttServer_orders" placeholder="<please enter mqtt broker IP address or hostname> value=141.22.102.168" >
+
+                <label for="usr">MQTT Topic Orders:</label>
+                <input type="text" class="form-control" id="mqttTopic_orders" placeholder="<please enter mqtt Topic Order>" >
+
+                <label for="usr">MQTT Server Resources:</label>
+                <input type="text" class="form-control" id="mqttServer_resources" placeholder="<please enter mqtt broker IP address or hostname> value=141.22.102.168" >
     
                 <label for="usr">MQTT Topic Resources:</label>
                 <input type="text" class="form-control" id="mqttTopic_resources" placeholder="<please enter mqtt Topic Resource>" >
-            
-                <label for="usr">MQTT Topic Orders:</label>
-                <input type="text" class="form-control" id="mqttTopic_orders" placeholder="<please enter mqtt Topic Order>" >
-            
             </div>
     
             <div class="btn-group-vertical" style="width:100%">               

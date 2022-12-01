@@ -32,3 +32,7 @@ Neue Funktion auf orders Page:
 lucas 27.11.22
 
 Login-Authentifizierung hinzugefügt. Verwendete Funktionen: buttonLogin, validatelogin, onConnect_pub_login 
+
+lucas 1.12.22
+
+Fehlerbehandlung hinzugefügt. Einstellungen der Funktion "Setup". Ästhetische Anpassungen. 
