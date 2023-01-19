@@ -13,16 +13,22 @@
   "author": "Apache Cordova Team",
   "license": "Apache-2.0",
   "devDependencies": {
-    "cordova-browser": "^6.0.0"
+    "cordova-browser": "^6.0.0",
+    "cordova-sqlite-storage": "^6.1.0"
   },
   "cordova": {
     "platforms": [
       "browser"
-    ]
+    ],
+    "plugins": {
+      "cordova-sqlite-storage": {}
+    }
   },
   "dependencies": {
     "cordova": "^11.0.0",
+    "dotenv": "^16.0.3",
     "mqtt": "^4.3.7",
-    "nqm": "^0.0.5"
+    "nqm": "^0.0.5",
+    "pg": "^8.8.0"
   }
 }

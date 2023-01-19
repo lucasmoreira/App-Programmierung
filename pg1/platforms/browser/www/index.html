@@ -166,7 +166,29 @@
                     Login_client.onConnectionLost = onConnectionLost;
                     Login_client.onMessageArrived = validatelogin;
 
-                    Login_client.connect({ onSuccess:  onConnect_pub_login});
+                    Login_client.connect({ onSuccess:  onConnect_pub_login}, 
+                            {onFailure: window.alert("Error connecting to the MQTT Server")});
+                }
+
+                function buttonLoginSQL(){
+                    const { Client } = require('pg');
+
+                    (async () => {
+                    const client = new Client({
+                        host: 'databasehaw.clsd7nrbhmct.eu-central-1.rds.amazonaws.com',
+                        port: 5432,
+                        user: 'postgresHAW',
+                        password: 'postgresHAW1',
+                        database: 'postgres',
+                        ssl: false,
+                    });
+                    await client.connect();
+                    const res = await client.query('SELECT $1::text as connected', ['Connection to postgres successful!']);
+                    console.log(res.rows[0].connected);
+                    await client.end();
+                    })();
+
+                    GoBack(); 
                 }
 
                 function validatelogin(message){
@@ -218,7 +240,7 @@
                     // set callback handlers 
                     pub_client.onConnectionLost = onConnectionLost; 
                     // connect the client 
-                    pub_client.connect({ onSuccess: onConnect_pub });
+                    pub_client.connect({ onSuccess: onConnect_pub , timeout: 5});
 
                 }
 
@@ -492,7 +514,7 @@
 
             <div class="grid" >
 
-                <img style="width:100%;" src="https://play-lh.googleusercontent.com/i8GXYP6dRj60rIRXTUMWJCQIXFL7OgAV0MFSH3CtACV86p-aH67oIXOVnrs_gT4pOec=w600-h300-pc0xffffff-pd" >
+                <img style="width:100%;" src="https://api.mygermanuniversity.com/images/university_logos/66f041e16a60928b05a7e228a89c3799_UVhojJfrqLYD1568707409.png" >
                 <br><br><br>
                 <form action="https://httpbin.org/post" method="POST" class="form login">
 
@@ -519,7 +541,12 @@
 
                 <div class="btn-group-vertical" style="width:100%;">
                     <button id="btnBack" type="button" class="btn btn-primary"
-                    onClick="buttonLogin()">Login</button>       
+                    onClick="buttonLogin()">Login HAW</button>       
+                </div>
+
+                <div class="btn-group-vertical" style="width:100%;">
+                    <button id="btnBack" type="button" class="btn btn-primary"
+                    onClick="buttonLoginSQL()">Login PostgreSQL</button>       
                 </div>
 
                 <div class="btn-group-vertical" style="width:100%;">
