@@ -171,30 +171,33 @@
                 }
 
                 function buttonLoginSQL(){
-                    
-                    var db = window.sqlitePlugin.openDatabase({
-                    name: 'my.db',
-                    location: 'default',
-                    androidDatabaseProvider: 'system'
-                    });
+                    const xhr = new XMLHttpRequest();
+                    xhr.open("GET", "http://127.0.0.1:5000/");
+                    xhr.send();
+                    xhr.responseType = "json";
+                    xhr.onload = () => {
+                    if (xhr.readyState == 4 && xhr.status == 200) {
+                        const data = xhr.response;
+                        const obj = JSON.parse(data);
+                        console.log(obj[0]);
 
-                    
-                    (async () => {
-                    const client = new Client({
-                        host: 'databasehaw.clsd7nrbhmct.eu-central-1.rds.amazonaws.com',
-                        port: 5432,
-                        user: 'postgresHAW',
-                        password: 'postgresHAW1',
-                        database: 'postgres',
-                        ssl: false,
-                    });
-                    await client.connect();
-                    const res = await client.query('SELECT $1::text as connected', ['Connection to postgres successful!']);
-                    console.log(res.rows[0].connected);
-                    await client.end();
-                    })();
+                        var loginUser = document.getElementById("loginUser").value;
+                        var loginPassword = document.getElementById("loginPassword").value;
 
-                    GoBack(); 
+                        if (loginUser != obj[0][0]) {
+                            window.alert("Username not found");
+                        }
+                        else{
+                            if (obj[0][1] == loginPassword)
+                                GoBack(); 
+                            else
+                                window.alert("Password wrong");
+                        }
+
+                    } else {
+                        console.log(`Error: ${xhr.status}`);
+                    }
+                    };
                 }
 
                 function validatelogin(message){
@@ -435,8 +438,8 @@
 
             //unsubscribes from current input Topics and resets Topic-textboxes and -localstorage
             function resetTopics(){
-                client_resources.unsubscribe(mqttTopic_resources.value, console.log("Success"), console.log("Error"));
-                client_orders.unsubscribe(mqttTopic_orders.value, console.log("Success"), console.log("Error"));
+                //client_resources.unsubscribe(mqttTopic_resources.value, console.log("Success"), console.log("Error"));
+                //client_orders.unsubscribe(mqttTopic_orders.value, console.log("Success"), console.log("Error"));
 
                 document.getElementById('mqttTopic_resources').value = "iot/";
                 document.getElementById('mqttTopic_orders').value = "iot/";
@@ -490,8 +493,11 @@
                 onClick="openPageResources()">Resources</button>
                 <button id="btnSetup" type="button" class="btn btn-primary"
                 onClick="openPageSetup()">Setup</button>
-                <button id="btnScan" type="button" class="btn btn-primary"
-                onClick="openPageScan()">Scanner</button>
+                <!--<button id="btnScan" type="button" class="btn btn-primary"
+                onClick="openPageScan()">Scanner</button>'[19:24] Schulz, Kevin
+-->
+
+
                 <br><br>
                 <button id="btnLogout" type="button" class="btn btn-primary"
                 onClick="openPageLogout()">Logout</button>
