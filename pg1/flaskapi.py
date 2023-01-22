@@ -22,12 +22,12 @@ class StudentsList(Resource):
     
             # connect to the PostgreSQL server
             print('Connecting to the PostgreSQL database...')
-            conn = psycopg2.connect("dbname=postgres user=postgresHAW password=postgresHAW1 host=databasehaw.clsd7nrbhmct.eu-central-1.rds.amazonaws.com")
+            conn = psycopg2.connect("dbname=postgres user= password= host=")
             
             # create a cursor
             cur = conn.cursor()
             
-        # execute a statement
+        # execute a statement*
             print('PostgreSQL database version:')
             cur.execute('select name, code from users')
     

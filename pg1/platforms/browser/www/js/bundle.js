@@ -3024,7 +3024,7 @@ function objectToString(o) {
   return Object.prototype.toString.call(o);
 }
 
-}).call(this)}).call(this,{"isBuffer":require("../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/is-buffer/index.js")})
+}).call(this)}).call(this,{"isBuffer":require("../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/is-buffer/index.js")})
 },{"../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/is-buffer/index.js":225}],4:[function(require,module,exports){
 if (typeof Object.create === 'function') {
   // implementation from standard node.js 'util' module
@@ -15465,7 +15465,7 @@ function convertTimezone(tz) {
   return false;
 }
 
-}).call(this)}).call(this,{"isBuffer":require("../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/is-buffer/index.js")})
+}).call(this)}).call(this,{"isBuffer":require("../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/is-buffer/index.js")})
 },{"../../../../../../../../../../usr/local/lib/node_modules/browserify/node_modules/is-buffer/index.js":225}],77:[function(require,module,exports){
 (function (global){(function (){
 
@@ -32987,7 +32987,7 @@ arguments[4][93][0].apply(exports,arguments)
 
 var elliptic = exports;
 
-elliptic.version = require('../package.json').version;
+elliptic.version = require('../../../package.json').version;
 elliptic.utils = require('./elliptic/utils');
 elliptic.rand = require('brorand');
 elliptic.curve = require('./elliptic/curve');
